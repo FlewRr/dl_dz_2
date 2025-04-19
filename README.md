@@ -1,10 +1,10 @@
 # dl_dz_2
 
 ## Задача 1
-1. При идентичных промптах -- результат будет одним и тем же
+1. При идентичных промптах - результат будет одним и тем же
 2. В случае с сказкой основная проблема в отсутсвии разнообразия, но при этом текст получился довольно связным и целостным. С джсоном явная проблема в том, что сумма указана в интовом числе, хотя перечислены были копейки и копейки посчитались как 5 рублей, хотя 50 копеек это 0.5 рублей + не было соблюдено требование валюту представить в виде кода, состоящего из 3 заглавных букв.
 3.
-#Сказка про Соника
+# Сказка про Соника
 
 > Once upon a time, in a small, cozy village nestled in the heart of the forest, there lived a tiny hedgehog named Sonic. Sonic was a curious and adventurous creature, always eager to explore the world around him. One day, while wandering through the forest, Sonic stumbled upon a hidden cave.\n\nInside the cave, Sonic discovered a treasure chest filled with magical items. As he opened the chest, he was amazed to see that the items were not just ordinary, but enchanted. Sonic was thrilled to find that he could use the items to help others in need.\n\nFrom that day on, Sonic became a hero in the village. He used his magical powers to help people in need, and soon, the village was filled with people who were grateful for the help they received from Sonic.\n\nSonic's story became a legend, and people from all over the village would tell stories about him. Sonic's adventures and his magic helped to bring joy and hope to the people of the village, and he was loved and respected by all who knew him.\n\nAnd so, Sonic continued to be a tiny hedgehog, always on the lookout for new adventures and helping others in need.
 
