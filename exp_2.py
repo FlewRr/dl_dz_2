@@ -20,4 +20,5 @@ if __name__ == "__main__":
     sampled_json = tokenizer.decode(sampled_json[json_encodding.input_ids.shape[1]:])
 
 
-    print(sampled_sonic, sampled_json)
+    print(sampled_sonic)
+    print(sampled_json)

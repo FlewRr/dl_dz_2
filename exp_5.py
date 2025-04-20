@@ -22,12 +22,13 @@ if __name__ == "__main__":
     beam_json_texts = []
 
     for (beams, lp) in params:
-        sonic_text = beam_search(model, tokenizer, prompt=input_text_hedgehog, max_new_tokens=1000, num_beams=beams,
+        print(beams, lp)
+        sonic_text = beam_search(model, tokenizer, prompt=input_text_hedgehog, num_beams=beams,
                                  length_penalty=lp, device=device)
         sonic_text = tokenizer.decode(sonic_text[0][0])
         beam_sonic_texts.append(sonic_text)
 
-        json_text = beam_search(model, tokenizer, prompt=input_text_json, max_new_tokens=1000, num_beams=beams,
+        json_text = beam_search(model, tokenizer, prompt=input_text_json, num_beams=beams,
                                 length_penalty=lp, device=device)
         json_text = tokenizer.decode(json_text[0][0])
         beam_json_texts.append(json_text)

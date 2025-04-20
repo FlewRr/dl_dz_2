@@ -22,4 +22,5 @@ if __name__ == "__main__":
     greed_json = tokenizer.decode(greed_json[json_encodding.input_ids.shape[1]:])
 
 
-    print(greed_sonic, greed_json)
+    print(greed_sonic)
+    print(greed_json)

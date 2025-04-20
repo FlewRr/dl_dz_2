@@ -33,5 +33,5 @@ if __name__ == "__main__":
         sampled_json_texts.append(json_text)
 
 
-    print(samples_sonic_texts)
-    print(samples_json_texts)
+    print(sampled_sonic_texts)
+    print(sampled_json_texts)

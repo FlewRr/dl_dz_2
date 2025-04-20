@@ -100,12 +100,10 @@ def nucleus_search(model, tokenizer, prompt="", max_new_tokens=1000, temperature
     return generated_ids.view(-1)
 
 
-def beam_search(model, tokenizer, prompt="", max_new_tokens=1000, temperature=1.0, num_beams=3, length_penalty=1, device='cpu'):
+def beam_search(model, tokenizer, prompt="", num_beams=3, length_penalty=1, device='cpu'):
     tokenized_prompt = tokenizer(prompt, return_tensors="pt")
     generated_ids = tokenized_prompt.input_ids.to(device)
     model = model.to(device)
-
-    max_new_tokens += tokenized_prompt.input_ids.shape[1]
 
     candidates = []
     finished_candidates = []
@@ -142,7 +140,7 @@ def beam_search(model, tokenizer, prompt="", max_new_tokens=1000, temperature=1.
         candidates_temp = [[torch.cat([token, token1], dim=-1), score + score1.item()] for token1, score1 in zip(candidates_tokens_temp, candidates_probs_temp)]
 
         for cndt in candidates_temp:
-          if cndt[0][-1] == tokenizer.eos_token_id or len(cndt[0]) > max_new_tokens:
+          if cndt[0][-1] == tokenizer.eos_token_id:
             finished_candidates.append(cndt)
           else:
             candidates2.append(cndt)
