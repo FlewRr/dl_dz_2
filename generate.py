@@ -62,13 +62,12 @@ def temperature_sampling(model, tokenizer, prompt="", max_new_tokens=1000, tempe
     return generated_ids.view(-1)
 
 
-def nucleus_search(model, tokenizer, prompt="", max_new_tokens=1000, temperature=1.0, top_p=1.0, device='cpu'):
+def nucleus_search(model, tokenizer, prompt="", max_new_tokens=1000, temperature=1.0, top_p=1.0):
     assert top_p > 0.0
     assert top_p <= 1.0
 
     tokenized_prompt = tokenizer(prompt, return_tensors="pt")
-    generated_ids = tokenized_prompt.input_ids.to(device)
-    model = model.to(device)
+    generated_ids = tokenized_prompt.input_ids.cuda()
 
     max_new_tokens += tokenized_prompt.input_ids.shape[1]
     next_token_id = torch.tensor(0)
@@ -83,38 +82,42 @@ def nucleus_search(model, tokenizer, prompt="", max_new_tokens=1000, temperature
 
       cummulative_probs = torch.cumsum(probs, dim=-1)
 
+      mask = cummulative_probs < top_p
+
       if cummulative_probs[0][-1][0] > top_p:
         top_p_index = 1
       else:
         top_p_index = torch.nonzero(cummulative_probs[0][-1] > top_p, as_tuple=False)[0].item()
 
-
+      indices_to_keep = sorted_indices[0, :, :top_p_index]
       indices_to_remove = sorted_indices[0, :, top_p_index:]
-      sorted_logits[0][-1][indices_to_remove[-1]] = float('-inf')
 
-      real_probs = torch.softmax(sorted_logits/temperature, dim=-1)
-      next_token_id = torch.multinomial(real_probs[:, -1, :], num_samples=1)
+      probs[0][-1][indices_to_keep[-1]] /= probs[0][-1][indices_to_keep[-1]].sum()
+      probs[0][-1][indices_to_remove[-1]] = 0
+
+      next_token_id = torch.multinomial(probs[:, -1, :], num_samples=1)
 
       generated_ids = torch.cat([generated_ids, next_token_id], dim=-1)
 
     return generated_ids.view(-1)
 
 
-def beam_search(model, tokenizer, prompt="", num_beams=3, length_penalty=1, device='cpu'):
+def beam_search(model, tokenizer, prompt="", temperature=1.0, num_beams=3, length_penalty=1):
     tokenized_prompt = tokenizer(prompt, return_tensors="pt")
-    generated_ids = tokenized_prompt.input_ids.to(device)
-    model = model.to(device)
+    generated_ids = tokenized_prompt.input_ids
 
+    next_token_id = torch.tensor(0)
     candidates = []
     finished_candidates = []
 
     while len(finished_candidates) < num_beams:
       if not candidates and not finished_candidates:
         with torch.no_grad():
-          outputs = model(input_ids=generated_ids)
+          outputs = model(input_ids=generated_ids.cuda())
           logits = outputs.logits
 
-        k_candidates = torch.topk(logits[0][-1], num_beams)
+        log_probs = F.log_softmax(logits[0][-1], dim=0)
+        k_candidates = torch.topk(log_probs, num_beams)
 
         candidates_tokens = k_candidates.indices.unsqueeze(-1).detach().cpu()
         candidates_probs = k_candidates.values.detach().cpu().tolist()
@@ -127,13 +130,14 @@ def beam_search(model, tokenizer, prompt="", num_beams=3, length_penalty=1, devi
         token = candidate[0]
         score = candidate[1]
 
-        tokenized_input = torch.cat([generated_ids, token.unsqueeze(0).to(device)], -1).to(device)
+        tokenized_input = torch.cat([generated_ids, token.unsqueeze(0)], -1).cuda()
 
         with torch.no_grad():
           outputs = model(input_ids=tokenized_input)
           logits = outputs.logits
 
-        k_candidates = torch.topk(logits[0][-1], num_beams)
+        log_probs = F.log_softmax(logits[0][-1], dim=0)
+        k_candidates = torch.topk(log_probs, num_beams)
         candidates_tokens_temp = k_candidates.indices.unsqueeze(-1).detach().cpu()
         candidates_probs_temp = k_candidates.values.detach().cpu()
 
